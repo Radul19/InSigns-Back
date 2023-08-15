@@ -2,12 +2,47 @@
 const bcrypt = require('bcrypt');
 const { Types } = require('mongoose');
 const User = require("../models/userSchema")
+const Code = require("../models/codeSchema")
+const nodemailer = require('nodemailer');
 const saltRounds = 10;
 const userFunc = {}
+/**qefzjgxebgwuuxar slyt
+/**zqrocbnbbtmsueli ensenas
+ */
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+}
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    host: 'smtp.gmail.com',
+    auth: {
+        user: 'ensenas.app1@gmail.com',
+        pass: 'zqrocbnbbtmsueli'
+    }
+});
+
+const mailTest = {
+    from: 'ensenas.app1@gmail.com',
+    to: 'radulito19@gmail.com',
+    subject: 'Código de verificacion de cuenta',
+    text: 'Ingrese el código xxx para verificar su cuenta de EnSeñas!'
+};
 
 
 userFunc.test = (req, res) => {
     console.log('#test')
+    // transporter.sendMail(mailTest, function (error, info) {
+    //     if (error) {
+    //         console.log(error);
+    //     } else {
+    //         console.log('Email sent: ' + info.response);
+    //     }
+    // });
+
     res.send('im working')
 }
 
@@ -15,6 +50,9 @@ userFunc.createUser = async (req, res) => {
     console.log('#createUser')
     try {
         const { name, second_name, email, username, password, genre, birthdate } = req.body
+
+        
+        
 
         bcrypt.genSalt(10, function (err, salt) {
             bcrypt.hash(password, salt, async (err, hash) => {
@@ -28,7 +66,28 @@ userFunc.createUser = async (req, res) => {
                     birthdate
                 })
                 const { password, ...goodData } = newUser._doc
-                console.log(goodData)
+                const randomNum = getRandomInt(100000, 999999)
+                const newCode = await Code.create({
+                    email: goodData.email,
+                    code: randomNum,
+                })
+
+                const mailOptions = {
+                    from: 'ensenas.app1@gmail.com',
+                    to: email,
+                    subject: 'Código de verificacion de cuenta',
+                    text: `Ingrese el código ${randomNum} para verificar su cuenta de EnSeñas!`
+                };
+
+                transporter.sendMail(mailOptions, function (error, info) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log('Email sent: ' + info.response);
+                    }
+                });
+
+                // console.log(goodData)
                 res.send(goodData)
             });
         });
@@ -47,7 +106,7 @@ userFunc.editUser = async (req, res) => {
         const { avatar = false, email = false, username = false, password = false, _id } = req.body
 
         let salt = bcrypt.genSaltSync(10);
-        let hash = bcrypt.hashSync(password ? password : '',salt );
+        let hash = bcrypt.hashSync(password ? password : '', salt);
 
         let aux = `{
             ${username ? '"username":"' + username + '",' : ""}
@@ -87,9 +146,14 @@ userFunc.login = async (req, res) => {
             bcrypt.compare(password, findUser.password, function (err, result) {
                 if (result) {
                     const { password, ...goodData } = findUser._doc
-                    console.log(goodData)
-                    console.log('waaa')
-                    res.send(goodData)
+                    if (goodData.verify) {
+                        res.send(goodData)
+                    } else {
+                        res.status(401).json({
+                            msg: 'Verifique su codigo',
+                            email: goodData.email
+                        })
+                    }
                 } else {
                     console.log('pass error')
                     res.status(404).json({
@@ -150,6 +214,46 @@ userFunc.findUser = async (req, res) => {
         })
     }
 }
+
+userFunc.verifyCode = async (req, res) => {
+    console.log('#verifyCode')
+    const { code } = req.body
+    const findCode = await Code.findOne({ code })
+    // console.log(findCode)
+    if (findCode) {
+        const findUser = await User.findOneAndUpdate({ email: findCode.email }, {
+            $set: { verify: true }
+        }, { new: true })
+        const { password, ...goodData } = findUser._doc
+        await Code.findOneAndDelete({ code })
+        res.send(goodData)
+
+    } else {
+        res.status(404).json({
+            msg: "Codigo incorrecto"
+        })
+    }
+
+    try {
+    } catch (error) {
+        res.status(404).json({
+            msg: 'Error ' + error.message
+        })
+    }
+}
+
+userFunc.createCode = async (req, res) => {
+    console.log('#createCode')
+    try {
+        const { code, email } = req.body
+        res.send(await Code.create({ code, email }))
+    } catch (error) {
+        res.status(404).json({
+            msg: 'Error ' + error.message
+        })
+    }
+}
+
 
 
 

@@ -9,9 +9,11 @@ const UserSchema = new Schema(
         genre: { type: Number, required: true },
         birthdate: { type: String, required: true },
         avatar: { type: Number, required: true,default:0 },
+        verify: { type: Boolean, required: true,default:false },
         class0:{type:Array,required:true,default:[]},
         class1:{type:Array,required:true,default:[]},
         class2:{type:Array,required:true,default:[]},
+        class3:{type:Array,required:true,default:[]},
     },
     {
         timestamps: true,
