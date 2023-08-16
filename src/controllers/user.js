@@ -64,52 +64,57 @@ userFunc.test = async (req, res) => {
 userFunc.createUser = async (req, res) => {
     console.log('#createUser')
     try {
-        const { name, second_name, email, username, password, genre, birthdate } = req.body
+        const { name, second_name, email, username, password: pass, genre, birthdate } = req.body
 
+        let salt = bcrypt.genSaltSync(10);
+        let hash = bcrypt.hashSync(pass, salt);
 
+        const promise1 = new Promise((resolve, reject) => {
 
-        await new Promise(async (resolve, reject) => {
+            const newUser = User.create({
+                verify: false,
+                name: name + ' ' + second_name,
+                email,
+                username,
+                password: hash,
+                genre,
+                birthdate
+            })
 
-            bcrypt.genSalt(10, async (err, salt)=> {
-                bcrypt.hash(password, salt, async (err, hash) => {
-                    // Store hash in your password DB.
-                    const newUser = await User.create({
-                        verify: false,
-                        name: name + ' ' + second_name,
-                        email,
-                        username,
-                        password: hash,
-                        genre,
-                        birthdate
-                    })
-                    const { password, ...goodData } = newUser._doc
-                    const randomNum = getRandomInt(100000, 999999)
-                    const newCode = await Code.create({
-                        email: goodData.email,
-                        code: randomNum,
-                    })
+            resolve(newUser)
+        })
 
+        // const { password, ...goodData } = newUser._doc
+        const randomNum = getRandomInt(100000, 999999)
 
-                    // send mail
-                    const data = await resend.emails.send({
-                        from: 'onboarding@resend.dev',
-                        to: email,
-                        subject: 'Código de verificación Enseñas',
-                        html: `<p>Su código de verificacion es ${randomNum}</p>`,
-                    });
-                    if (data) {
-                        resolve(res.send({goodData,data,newCode}))
-                    } else {
-                        console.log('error')
-                        reject(res.status(404).json({ error: 'idk man' }))
-                    }
-                });
+        const promise2 = new Promise((resolve, reject) => {
+            const newCode = Code.create({
+                email: email,
+                code: randomNum,
+            })
+            resolve(newCode)
+        })
 
-
-
-                // console.log(goodData)
+        const promise3 = new Promise((resolve, reject) => {
+            // send mail
+            const data = resend.emails.send({
+                from: 'onboarding@resend.dev',
+                to: email,
+                subject: 'Código de verificación Enseñas',
+                html: `<p>Su código de verificacion es ${randomNum}</p>`,
             });
-        });
+            resolve(data)
+        })
+
+        Promise.all([promise1,promise2,promise3]).then(valu=>{
+            res.send(valu)
+        })
+
+
+
+
+        // console.log(goodData)
+
 
 
 
