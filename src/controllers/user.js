@@ -58,6 +58,7 @@ userFunc.createUser = async (req, res) => {
             bcrypt.hash(password, salt, async (err, hash) => {
                 // Store hash in your password DB.
                 const newUser = await User.create({
+                    verify:false,
                     name: name + ' ' + second_name,
                     email,
                     username,
