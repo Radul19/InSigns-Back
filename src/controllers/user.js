@@ -112,17 +112,22 @@ userFunc.createUser = async (req, res) => {
             };
             const mail = transporterTest.sendMail(mailData, function (error, info) {
                 if (error) {
+                    console.log("error")
+                    console.log(error)
+                    resolve(error)
                     return error
                 } else {
+                    console.log("info")
+                    console.log(info)
+                    resolve(info.response)
                     return'Email sent: ' + info.response;
                 }
             });
 
-            resolve(mail)
         })
 
         Promise.all([promise1, promise2, promise3]).then(valu => {
-            res.send(valu[0])
+            res.send(valu)
         })
 
 
