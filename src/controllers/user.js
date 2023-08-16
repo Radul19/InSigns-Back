@@ -113,15 +113,16 @@ userFunc.createUser = async (req, res) => {
                         if (err) {
                             console.error(err);
                             reject(err);
+                            res.send('error')
                         } else {
                             console.log(info);
                             resolve(info);
+                            res.send(goodData)
                         }
                     });
                 });
 
                 // console.log(goodData)
-                res.send(goodData)
             });
         });
 
