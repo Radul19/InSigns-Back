@@ -10,6 +10,9 @@ const userFunc = {}
 /**zqrocbnbbtmsueli ensenas
  */
 
+const { Resend } = require('resend')
+const resend = new Resend('re_86j66LBW_LKpsbL9gnCZnU47ciJk5hQ9D');
+
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -33,8 +36,20 @@ const mailTest = {
 };
 
 
-userFunc.test = (req, res) => {
+userFunc.test = async (req, res) => {
     console.log('#test')
+    // try {
+    //     const data = await resend.emails.send({
+    //         from: 'onboarding@resend.dev',
+    //         to: 'radulito19@gmail.com',
+    //         subject: 'Código de verificacion EnsenasApp',
+    //         html: '<p>Su código de verificacion es xxx </p>',
+    //     });
+
+    //     console.log(data);
+    // } catch (error) {
+    //     console.error(error);
+    // }
     // transporter.sendMail(mailTest, function (error, info) {
     //     if (error) {
     //         console.log(error);
@@ -58,7 +73,7 @@ userFunc.createUser = async (req, res) => {
             bcrypt.hash(password, salt, async (err, hash) => {
                 // Store hash in your password DB.
                 const newUser = await User.create({
-                    verify:false,
+                    verify: false,
                     name: name + ' ' + second_name,
                     email,
                     username,
@@ -74,54 +89,15 @@ userFunc.createUser = async (req, res) => {
                 })
 
 
-                /**  EMAIL AWAIT LOGIC */
-                const transporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    host: 'smtp.gmail.com',
-                    port: 465,
-                    secure: true,
-                    auth: {
-                        user: 'ensenas.app1@gmail.com',
-                        pass: 'zqrocbnbbtmsueli'
-                    }
-                });
-
-
-                await new Promise((resolve, reject) => {
-                    // verify connection configuration
-                    transporter.verify(function (error, success) {
-                        if (error) {
-                            console.log(error);
-                            reject(error);
-                        } else {
-                            console.log("Server is ready to take our messages");
-                            resolve(success);
-                        }
-                    });
-                });
-
-                const mailData = {
-                    from: 'ensenas.app1@gmail.com',
+                const data = await resend.emails.send({
+                    from: 'onboarding@resend.dev',
                     to: email,
-                    subject: 'Código de verificacion de cuenta',
-                    text: `Ingrese el código ${randomNum} para verificar su cuenta de EnSeñas!`
-                };
-
-                await new Promise((resolve, reject) => {
-                    // send mail
-                    transporter.sendMail(mailData, (err, info) => {
-                        if (err) {
-                            console.error(err);
-                            reject(err);
-                            res.send('error')
-                        } else {
-                            console.log(info);
-                            resolve(info);
-                            res.send(goodData)
-                        }
-                    });
+                    subject: 'Código de verificación Enseñas',
+                    html: `<p>Su código de verificacion es ${randomNum}</p>`,
                 });
 
+
+                res.send(goodData)
                 // console.log(goodData)
             });
         });
