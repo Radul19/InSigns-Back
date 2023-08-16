@@ -81,9 +81,9 @@ userFunc.createUser = async (req, res) => {
                 birthdate
             })
 
-            const { password, ...goodData } = newUser._doc
-            resolve(goodData)
+            resolve(newUser)
         })
+        // const { password, ...goodData } = newUser._doc
 
         const randomNum = getRandomInt(100000, 999999)
 
