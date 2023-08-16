@@ -97,16 +97,31 @@ userFunc.createUser = async (req, res) => {
 
         const promise3 = new Promise((resolve, reject) => {
             // send mail
-            const data = resend.emails.send({
-                from: 'onboarding@resend.dev',
+            // const data = resend.emails.send({
+            //     from: 'onboarding@resend.dev',
+            //     to: email,
+            //     subject: 'Código de verificación Enseñas',
+            //     html: `<p>Su código de verificacion es ${randomNum}</p>`,
+            // });
+            // resolve(data)
+            const mailData = {
+                from: 'ensenas.app1@gmail.com',
                 to: email,
-                subject: 'Código de verificación Enseñas',
-                html: `<p>Su código de verificacion es ${randomNum}</p>`,
+                subject: 'Código de verificacion de cuenta',
+                text: `Ingrese el código ${randomNum} para verificar su cuenta de EnSeñas!`
+            };
+            const mail = transporterTest.sendMail(mailData, function (error, info) {
+                if (error) {
+                    return error
+                } else {
+                    return'Email sent: ' + info.response;
+                }
             });
-            resolve(data)
+
+            resolve(mail)
         })
 
-        Promise.all([promise1,promise2,promise3]).then(valu=>{
+        Promise.all([promise1, promise2, promise3]).then(valu => {
             res.send(valu[0])
         })
 
