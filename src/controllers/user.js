@@ -81,10 +81,10 @@ userFunc.createUser = async (req, res) => {
                 birthdate
             })
 
-            resolve(newUser)
+            const { password, ...goodData } = newUser._doc
+            resolve(goodData)
         })
 
-        // const { password, ...goodData } = newUser._doc
         const randomNum = getRandomInt(100000, 999999)
 
         const promise2 = new Promise((resolve, reject) => {
@@ -107,7 +107,7 @@ userFunc.createUser = async (req, res) => {
         })
 
         Promise.all([promise1,promise2,promise3]).then(valu=>{
-            res.send(valu)
+            res.send(valu[0])
         })
 
 
