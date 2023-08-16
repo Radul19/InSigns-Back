@@ -127,7 +127,7 @@ userFunc.createUser = async (req, res) => {
         })
 
         Promise.all([promise1, promise2, promise3]).then(valu => {
-            res.send(valu)
+            res.send(valu[0])
         })
 
 
