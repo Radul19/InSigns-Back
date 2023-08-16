@@ -16,7 +16,7 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
 }
 
-const transporter = nodemailer.createTransport({
+const transporterTest = nodemailer.createTransport({
     service: 'gmail',
     host: 'smtp.gmail.com',
     auth: {
@@ -51,8 +51,8 @@ userFunc.createUser = async (req, res) => {
     try {
         const { name, second_name, email, username, password, genre, birthdate } = req.body
 
-        
-        
+
+
 
         bcrypt.genSalt(10, function (err, salt) {
             bcrypt.hash(password, salt, async (err, hash) => {
@@ -72,19 +72,49 @@ userFunc.createUser = async (req, res) => {
                     code: randomNum,
                 })
 
-                const mailOptions = {
+
+                /**  EMAIL AWAIT LOGIC */
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    host: 'smtp.gmail.com',
+                    auth: {
+                        user: 'ensenas.app1@gmail.com',
+                        pass: 'zqrocbnbbtmsueli'
+                    }
+                });
+
+
+                await new Promise((resolve, reject) => {
+                    // verify connection configuration
+                    transporter.verify(function (error, success) {
+                        if (error) {
+                            console.log(error);
+                            reject(error);
+                        } else {
+                            console.log("Server is ready to take our messages");
+                            resolve(success);
+                        }
+                    });
+                });
+
+                const mailData = {
                     from: 'ensenas.app1@gmail.com',
                     to: email,
                     subject: 'Código de verificacion de cuenta',
                     text: `Ingrese el código ${randomNum} para verificar su cuenta de EnSeñas!`
                 };
 
-                transporter.sendMail(mailOptions, function (error, info) {
-                    if (error) {
-                        console.log(error);
-                    } else {
-                        console.log('Email sent: ' + info.response);
-                    }
+                await new Promise((resolve, reject) => {
+                    // send mail
+                    transporter.sendMail(mailData, (err, info) => {
+                        if (err) {
+                            console.error(err);
+                            reject(err);
+                        } else {
+                            console.log(info);
+                            resolve(info);
+                        }
+                    });
                 });
 
                 // console.log(goodData)
