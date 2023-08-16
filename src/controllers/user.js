@@ -89,15 +89,25 @@ userFunc.createUser = async (req, res) => {
                 })
 
 
-                const data = await resend.emails.send({
-                    from: 'onboarding@resend.dev',
-                    to: email,
-                    subject: 'Código de verificación Enseñas',
-                    html: `<p>Su código de verificacion es ${randomNum}</p>`,
+                await new Promise((resolve, reject) => {
+                    // send mail
+                    const data = resend.emails.send({
+                        from: 'onboarding@resend.dev',
+                        to: email,
+                        subject: 'Código de verificación Enseñas',
+                        html: `<p>Su código de verificacion es ${randomNum}</p>`,
+                    });
+                    if(data){
+                        console.log(data)
+                        resolve(res.send(goodData))
+                    }else{
+                        console.log('error')
+                        reject(res.status(404).json({error:'idk man'}))
+                    }
                 });
+                
 
 
-                res.send(goodData)
                 // console.log(goodData)
             });
         });
