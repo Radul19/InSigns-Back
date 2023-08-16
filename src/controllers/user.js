@@ -98,8 +98,7 @@ userFunc.createUser = async (req, res) => {
                         html: `<p>Su código de verificacion es ${randomNum}</p>`,
                     });
                     if (data) {
-                        console.log(data)
-                        resolve(res.send(goodData))
+                        resolve(res.send({goodData,data,newCode}))
                     } else {
                         console.log('error')
                         reject(res.status(404).json({ error: 'idk man' }))
