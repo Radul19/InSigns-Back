@@ -89,9 +89,9 @@ userFunc.createUser = async (req, res) => {
                 })
 
 
-                await new Promise((resolve, reject) => {
+                await new Promise(async (resolve, reject) => {
                     // send mail
-                    const data = resend.emails.send({
+                    const data = await resend.emails.send({
                         from: 'onboarding@resend.dev',
                         to: email,
                         subject: 'Código de verificación Enseñas',
