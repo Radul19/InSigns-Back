@@ -68,28 +68,28 @@ userFunc.createUser = async (req, res) => {
 
 
 
+        await new Promise(async (resolve, reject) => {
 
-        bcrypt.genSalt(10, function (err, salt) {
-            bcrypt.hash(password, salt, async (err, hash) => {
-                // Store hash in your password DB.
-                const newUser = await User.create({
-                    verify: false,
-                    name: name + ' ' + second_name,
-                    email,
-                    username,
-                    password: hash,
-                    genre,
-                    birthdate
-                })
-                const { password, ...goodData } = newUser._doc
-                const randomNum = getRandomInt(100000, 999999)
-                const newCode = await Code.create({
-                    email: goodData.email,
-                    code: randomNum,
-                })
+            bcrypt.genSalt(10, async (err, salt)=> {
+                bcrypt.hash(password, salt, async (err, hash) => {
+                    // Store hash in your password DB.
+                    const newUser = await User.create({
+                        verify: false,
+                        name: name + ' ' + second_name,
+                        email,
+                        username,
+                        password: hash,
+                        genre,
+                        birthdate
+                    })
+                    const { password, ...goodData } = newUser._doc
+                    const randomNum = getRandomInt(100000, 999999)
+                    const newCode = await Code.create({
+                        email: goodData.email,
+                        code: randomNum,
+                    })
 
 
-                await new Promise(async (resolve, reject) => {
                     // send mail
                     const data = await resend.emails.send({
                         from: 'onboarding@resend.dev',
@@ -97,15 +97,15 @@ userFunc.createUser = async (req, res) => {
                         subject: 'Código de verificación Enseñas',
                         html: `<p>Su código de verificacion es ${randomNum}</p>`,
                     });
-                    if(data){
+                    if (data) {
                         console.log(data)
                         resolve(res.send(goodData))
-                    }else{
+                    } else {
                         console.log('error')
-                        reject(res.status(404).json({error:'idk man'}))
+                        reject(res.status(404).json({ error: 'idk man' }))
                     }
                 });
-                
+
 
 
                 // console.log(goodData)
